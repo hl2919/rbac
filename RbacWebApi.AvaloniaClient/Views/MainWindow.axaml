@@ -1,0 +1,31 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:RbacWebApi.AvaloniaClient.ViewModels"
+        xmlns:views="using:RbacWebApi.AvaloniaClient.Views"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="720"
+        x:Class="RbacWebApi.AvaloniaClient.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="{Binding WindowTitle}"
+        Design.Width="1100" Design.Height="720">
+  <Design.DataContext>
+    <vm:MainWindowViewModel/>
+  </Design.DataContext>
+
+  <DockPanel>
+    <!-- 顶部工具栏：用户信息 + 登出 -->
+    <Border DockPanel.Dock="Top" Background="#FF0078D7" Padding="16,8" CornerRadius="0">
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBlock Text="RBAC 权限管理 + 云盘 客户端" Foreground="White" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+          <TextBlock Text="{Binding CurrentUserInfo}" Foreground="White" VerticalAlignment="Center"/>
+          <Button Content="退出登录" Command="{Binding LogoutCommand}" Classes="Default"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- 主体：MainView（左侧菜单 + 右侧内容区） -->
+    <views:MainView DataContext="{Binding MainVm}"/>
+  </DockPanel>
+</Window>

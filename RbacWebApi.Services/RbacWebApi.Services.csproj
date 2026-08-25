@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="NUlid" Version="1.7.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RbacWebApi.Models\RbacWebApi.Models.csproj" />
+    <ProjectReference Include="..\RbacWebApi.Shared\RbacWebApi.Shared.csproj" />
+    <ProjectReference Include="..\RbacWebApi.ORM\RbacWebApi.ORM.csproj" />
+  </ItemGroup>
+
+</Project>

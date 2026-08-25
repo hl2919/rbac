@@ -1,0 +1,59 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RbacWebApi.AvaloniaClient.ViewModels"
+             x:Class="RbacWebApi.AvaloniaClient.Views.MainView"
+             x:DataType="vm:MainViewModel"
+             Design.Width="1100" Design.Height="720">
+  <Design.DataContext>
+    <vm:MainViewModel/>
+  </Design.DataContext>
+
+  <Grid ColumnDefinitions="220,*">
+
+    <!-- ===== 左侧菜单栏 ===== -->
+    <Border Grid.Column="0" Background="#FF2D2D30">
+      <DockPanel>
+        <!-- 顶部标题 -->
+        <Border DockPanel.Dock="Top" Padding="16,20,16,16">
+          <TextBlock Text="RBAC 管理系统" Foreground="White" FontSize="16" FontWeight="Bold"/>
+        </Border>
+        <Border DockPanel.Dock="Top" Height="1" Background="#FF3F3F46"/>
+
+        <!-- 菜单列表：ItemsSource 绑定 MenuItems，点击切换 SelectedMenuItem -->
+        <ListBox ItemsSource="{Binding MenuItems}"
+                 SelectedItem="{Binding SelectedMenuItem, Mode=TwoWay}"
+                 Background="Transparent" BorderThickness="0" Padding="0">
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,2" Height="36">
+                <TextBlock Text="{Binding Icon}" FontSize="18" VerticalAlignment="Center" Width="24" TextAlignment="Center"/>
+                <TextBlock Text="{Binding Title}" FontSize="14" VerticalAlignment="Center"/>
+              </StackPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+          <ListBox.Styles>
+            <Style Selector="ListBoxItem">
+              <Setter Property="Foreground" Value="#FFCCCCCC"/>
+              <Setter Property="Padding" Value="16,6"/>
+            </Style>
+            <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+              <Setter Property="Background" Value="#FF3F3F46"/>
+            </Style>
+            <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+              <Setter Property="Background" Value="#FF0078D7"/>
+            </Style>
+            <Style Selector="ListBoxItem:selected">
+              <Setter Property="Foreground" Value="White"/>
+            </Style>
+          </ListBox.Styles>
+        </ListBox>
+      </DockPanel>
+    </Border>
+
+    <!-- ===== 右侧内容区 ===== -->
+    <Border Grid.Column="1" Background="#FFFFFFFF">
+      <ContentControl Content="{Binding CurrentView}" />
+    </Border>
+
+  </Grid>
+</UserControl>

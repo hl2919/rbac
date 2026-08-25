@@ -1,0 +1,11 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="RbacWebApi.AvaloniaClient.App"
+             RequestedThemeVariant="Default">
+  <Application.Styles>
+    <FluentTheme />
+    <!-- DataGrid 是独立包控件，必须显式引入 Fluent 主题资源，否则样式缺失会渲染为不可见 -->
+    <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
+  </Application.Styles>
+  <!-- 采用 View-First + IoC 注入模式，Views 和 ViewModels 通过构造注入绑定，不再使用 VM→View 的 DataTemplate 映射 -->
+</Application>

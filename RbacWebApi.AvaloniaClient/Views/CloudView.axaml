@@ -1,0 +1,117 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RbacWebApi.AvaloniaClient.ViewModels"
+             xmlns:dg="using:Avalonia.Controls"
+             x:Class="RbacWebApi.AvaloniaClient.Views.CloudView"
+             x:DataType="vm:CloudViewModel"
+            DragDrop.AllowDrop="True"
+            Design.Width="880" Design.Height="640">
+  <Design.DataContext>
+    <vm:CloudViewModel/>
+  </Design.DataContext>
+
+  <UserControl.Styles>
+    <Style Selector="Border.dropZone">
+      <Setter Property="Background" Value="#FFFAFAFA"/>
+      <Setter Property="BorderBrush" Value="#FFCCCCCC"/>
+      <Setter Property="BorderThickness" Value="1,1,1,1"/>
+      <Setter Property="CornerRadius" Value="6"/>
+    </Style>
+    <Style Selector="Border.dropZone:pointerover">
+      <Setter Property="Background" Value="#FFE8F3FF"/>
+      <Setter Property="BorderBrush" Value="#FF0078D7"/>
+    </Style>
+  </UserControl.Styles>
+
+  <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" Margin="0,0,0,0">
+
+    <!-- 云盘状态行 -->
+    <Border Grid.Row="0" Background="#FFE8F3FF" CornerRadius="6" Padding="12" Margin="0,0,0,6">
+      <Grid ColumnDefinitions="Auto,*,Auto">
+        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Grid.Column="0">
+          <TextBlock Text="状态：" FontWeight="SemiBold"/>
+          <TextBlock Text="{Binding Status}"/>
+        </StackPanel>
+        <ProgressBar Grid.Column="1" Minimum="0" Maximum="{Binding Quota}" Value="{Binding UsedSize}" Height="16" VerticalAlignment="Center" Margin="12,0"/>
+        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6">
+          <TextBlock VerticalAlignment="Center" Text="已用 / 总空间（字节）" />
+          <Button Content="开通10GB" Command="{Binding ActivateCommand}" IsEnabled="{Binding !Activated}" Classes="Accent"/>
+          <Button Content="刷新状态" Command="{Binding RefreshStatusCommand}"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- 工具条：上传/下载/新建文件夹/导航 -->
+    <Border Grid.Row="1" Background="#FFF7F7F7" CornerRadius="6" Padding="10" Margin="0,0,0,6">
+      <StackPanel Orientation="Vertical" Spacing="6">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+            <TextBlock Text="当前位置：" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            <TextBlock Text="{Binding CurrentPath}" VerticalAlignment="Center"/>
+          </StackPanel>
+          <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
+            <Button Content="上级" Command="{Binding UpLevelCommand}"/>
+            <Button Content="进入文件夹" Command="{Binding OpenFolderCommand}"/>
+            <Button Content="刷新列表" Command="{Binding RefreshListCommand}" Classes="Accent"/>
+            <Button Content="删除选中" Command="{Binding DeleteCommand}"/>
+          </StackPanel>
+        </Grid>
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+            <TextBlock Text="新建文件夹：" VerticalAlignment="Center"/>
+            <TextBox Text="{Binding NewFolderName, Mode=TwoWay}" Watermark="新文件夹名" Width="200"/>
+            <Button Content="创建" Command="{Binding CreateFolderCommand}"/>
+          </StackPanel>
+          <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
+            <Button Content="选择文件上传" Command="{Binding PickFileAndUploadCommand}" Classes="Accent"/>
+            <Button Content="下载到..." Command="{Binding DownloadCommand}"/>
+          </StackPanel>
+        </Grid>
+      </StackPanel>
+    </Border>
+
+    <!-- 文件列表 + 拖拽区域：DataGrid 本身作为拖拽接收区 -->
+    <Border Grid.Row="2" Classes="dropZone" Padding="0,0,0,0" MinHeight="160">
+      <dg:DataGrid ItemsSource="{Binding Items}"
+                   SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+                   AutoGenerateColumns="False" IsReadOnly="True"
+                   GridLinesVisibility="Horizontal" HeadersVisibility="Column"
+                   SelectionMode="Single" CanUserResizeColumns="True" CanUserReorderColumns="True">
+        <dg:DataGrid.Columns>
+          <dg:DataGridTemplateColumn Header="类型" Width="80" IsReadOnly="True">
+            <dg:DataGridTemplateColumn.CellTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding IsFolder, Converter={x:Static vm:BoolToTextConverter.Instance}}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+              </DataTemplate>
+            </dg:DataGridTemplateColumn.CellTemplate>
+          </dg:DataGridTemplateColumn>
+          <dg:DataGridTextColumn Header="名称"        Binding="{Binding FileName}"       Width="*"   IsReadOnly="True"/>
+          <dg:DataGridTextColumn Header="大小(字节)"  Binding="{Binding FileSize}"       Width="140" IsReadOnly="True"/>
+          <dg:DataGridTextColumn Header="扩展名"      Binding="{Binding FileExtension}"  Width="120" IsReadOnly="True"/>
+          <dg:DataGridTextColumn Header="状态"        Binding="{Binding UploadStatus}"   Width="100" IsReadOnly="True"/>
+          <dg:DataGridTextColumn Header="创建时间"    Binding="{Binding CreateTime, StringFormat='yyyy-MM-dd HH:mm'}" Width="180" IsReadOnly="True"/>
+        </dg:DataGrid.Columns>
+      </dg:DataGrid>
+    </Border>
+
+    <!-- 进度行 -->
+    <Grid Grid.Row="3" ColumnDefinitions="Auto,*,Auto,*,Auto" Margin="0,6,0,0" MinHeight="24">
+      <TextBlock Grid.Column="0" Text="上传：" VerticalAlignment="Center" FontWeight="SemiBold"/>
+      <ProgressBar Grid.Column="1" Minimum="0" Maximum="1" Value="{Binding UploadProgress}" Height="14" Margin="6,0"/>
+      <TextBlock Grid.Column="2" Text="下载：" VerticalAlignment="Center" FontWeight="SemiBold" Margin="12,0,0,0"/>
+      <ProgressBar Grid.Column="3" Minimum="0" Maximum="1" Value="{Binding DownloadProgress}" Height="14" Margin="6,0"/>
+      <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center" Spacing="4" Margin="8,0,0,0">
+        <TextBlock Text="{Binding UploadProgress, StringFormat='上传 {0:P0}'}"/>
+        <TextBlock Text="|"/>
+        <TextBlock Text="{Binding DownloadProgress, StringFormat='下载 {0:P0}'}"/>
+      </StackPanel>
+    </Grid>
+
+    <!-- 底部状态 + 拖拽提示 -->
+    <StackPanel Grid.Row="4" Orientation="Vertical" Spacing="2" Margin="0,4,0,0">
+      <TextBlock Text="{Binding UploadStatus}" Foreground="#FF0078D7" TextWrapping="Wrap"/>
+      <TextBlock Text="支持将本地文件拖拽到上方列表区域直接上传；下载时请选择本地文件夹。" Foreground="#FF888888" FontSize="11"/>
+    </StackPanel>
+
+  </Grid>
+</UserControl>

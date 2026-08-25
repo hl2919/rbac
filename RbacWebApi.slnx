@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="RbacWebApi.AvaloniaClient/RbacWebApi.AvaloniaClient.csproj" />
+  <Project Path="RbacWebApi.Models/RbacWebApi.Models.csproj" />
+  <Project Path="RbacWebApi.ORM/RbacWebApi.ORM.csproj" />
+  <Project Path="RbacWebApi.Services/RbacWebApi.Services.csproj" />
+  <Project Path="RbacWebApi.Shared/RbacWebApi.Shared.csproj" />
+  <Project Path="RbacWebApi/RbacWebApi.csproj" />
+</Solution>

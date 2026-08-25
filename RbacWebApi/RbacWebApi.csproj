@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.10" />
+    <PackageReference Include="NUlid" Version="1.7.3" />
+    <PackageReference Include="SqlSugarCore" Version="5.1.4.150" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RbacWebApi.Models\RbacWebApi.Models.csproj" />
+    <ProjectReference Include="..\RbacWebApi.Shared\RbacWebApi.Shared.csproj" />
+    <ProjectReference Include="..\RbacWebApi.ORM\RbacWebApi.ORM.csproj" />
+    <ProjectReference Include="..\RbacWebApi.Services\RbacWebApi.Services.csproj" />
+  </ItemGroup>
+
+</Project>

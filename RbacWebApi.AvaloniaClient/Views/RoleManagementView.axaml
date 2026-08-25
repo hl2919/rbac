@@ -1,0 +1,31 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RbacWebApi.AvaloniaClient.ViewModels"
+             xmlns:dg="using:Avalonia.Controls"
+             x:Class="RbacWebApi.AvaloniaClient.Views.RoleManagementView"
+             x:DataType="vm:RoleManagementViewModel"
+             Design.Width="880" Design.Height="520">
+  <Design.DataContext>
+    <vm:RoleManagementViewModel/>
+  </Design.DataContext>
+
+  <DockPanel>
+    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+      <Button Content="刷新" Command="{Binding RefreshCommand}" HorizontalAlignment="Right" Classes="Accent"/>
+      <TextBlock Text="{Binding Status}" VerticalAlignment="Center"/>
+    </DockPanel>
+
+    <dg:DataGrid ItemsSource="{Binding Items}" AutoGenerateColumns="False" IsReadOnly="True"
+                 GridLinesVisibility="Horizontal" HeadersVisibility="Column"
+                 SelectionMode="Single" CanUserResizeColumns="True">
+      <dg:DataGrid.Columns>
+        <dg:DataGridTextColumn Header="ID"        Binding="{Binding Id}"          Width="220" IsReadOnly="True"/>
+        <dg:DataGridTextColumn Header="角色名"    Binding="{Binding RoleName}"    Width="180" IsReadOnly="True"/>
+        <dg:DataGridTextColumn Header="编码"      Binding="{Binding RoleCode}"    Width="180" IsReadOnly="True"/>
+        <dg:DataGridTextColumn Header="说明"      Binding="{Binding Description}" Width="*"   IsReadOnly="True"/>
+        <dg:DataGridTextColumn Header="状态"      Binding="{Binding Status}"      Width="80"  IsReadOnly="True"/>
+        <dg:DataGridTextColumn Header="创建时间"  Binding="{Binding CreateTime, StringFormat='yyyy-MM-dd HH:mm'}" Width="180" IsReadOnly="True"/>
+      </dg:DataGrid.Columns>
+    </dg:DataGrid>
+  </DockPanel>
+</UserControl>

@@ -1,0 +1,37 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RbacWebApi.AvaloniaClient.ViewModels"
+             xmlns:dg="using:Avalonia.Controls"
+             x:Class="RbacWebApi.AvaloniaClient.Views.UserManagementView"
+             x:DataType="vm:UserManagementViewModel"
+             Design.Width="880" Design.Height="560">
+  <Design.DataContext>
+    <vm:UserManagementViewModel/>
+  </Design.DataContext>
+
+  <DockPanel>
+    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+      <StackPanel Orientation="Horizontal" Spacing="8" DockPanel.Dock="Right">
+        <TextBox Watermark="搜索关键字" Text="{Binding Keyword, Mode=TwoWay}" Width="180"/>
+        <Button Content="上一页" Command="{Binding PreviousCommand}"/>
+        <Button Content="刷新" Command="{Binding RefreshCommand}" Classes="Accent"/>
+        <Button Content="下一页" Command="{Binding NextCommand}"/>
+      </StackPanel>
+      <TextBlock Text="{Binding Status}" VerticalAlignment="Center"/>
+    </DockPanel>
+
+    <dg:DataGrid ItemsSource="{Binding Items}" AutoGenerateColumns="False" IsReadOnly="True"
+                 GridLinesVisibility="Horizontal" HeadersVisibility="Column"
+                 SelectionMode="Single" CanUserResizeColumns="True" CanUserReorderColumns="True">
+      <dg:DataGrid.Columns>
+        <dg:DataGridTextColumn Header="ID"        Binding="{Binding Id}"         Width="200" IsReadOnly="True"/>
+        <dg:DataGridTextColumn Header="用户名"   Binding="{Binding Username}"   Width="140" IsReadOnly="True"/>
+        <dg:DataGridTextColumn Header="昵称"     Binding="{Binding Nickname}"   Width="140" IsReadOnly="True"/>
+        <dg:DataGridTextColumn Header="邮箱"     Binding="{Binding Email}"      Width="220" IsReadOnly="True"/>
+        <dg:DataGridTextColumn Header="手机"     Binding="{Binding Phone}"      Width="160" IsReadOnly="True"/>
+        <dg:DataGridTextColumn Header="状态"     Binding="{Binding Status}"     Width="80"  IsReadOnly="True"/>
+        <dg:DataGridTextColumn Header="创建时间" Binding="{Binding CreateTime, StringFormat='yyyy-MM-dd HH:mm'}" Width="180" IsReadOnly="True"/>
+      </dg:DataGrid.Columns>
+    </dg:DataGrid>
+  </DockPanel>
+</UserControl>
