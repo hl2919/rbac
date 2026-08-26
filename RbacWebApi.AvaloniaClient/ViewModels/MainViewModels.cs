@@ -55,10 +55,12 @@ public partial class MainViewModel : ViewModelBase
     private RoleManagementView? _roleView;
     private ApiListView? _apiView;
     private CloudView? _cloudView;
+    private WmsView? _wmsView;
     private UserManagementViewModel? _userVm;
     private RoleManagementViewModel? _roleVm;
     private ApiListViewModel? _apiVm;
     private CloudViewModel? _cloudVm;
+    private WmsViewModel? _wmsVm;
 
     /// <summary>菜单项集合（动态加载，方便后续扩展）</summary>
     public ObservableCollection<MenuItem> MenuItems { get; } = [];
@@ -83,22 +85,27 @@ public partial class MainViewModel : ViewModelBase
             var rv = new RoleManagementView();
             var av = new ApiListView();
             var cv = new CloudView();
+            var wv = new WmsView();
             var uvm = new UserManagementViewModel();
             var rvm = new RoleManagementViewModel();
             var avm = new ApiListViewModel();
             var cvm = new CloudViewModel();
+            var wvm = new WmsViewModel();
             uv.DataContext = uvm;
             rv.DataContext = rvm;
             av.DataContext = avm;
             cv.DataContext = cvm;
+            wv.DataContext = wvm;
             _userView = uv;
             _roleView = rv;
             _apiView = av;
             _cloudView = cv;
+            _wmsView = wv;
             _userVm = uvm;
             _roleVm = rvm;
             _apiVm = avm;
             _cloudVm = cvm;
+            _wmsVm = wvm;
 
             if (MenuItems.Count > 0)
                 SelectMenuItem(MenuItems[0]);
@@ -109,17 +116,21 @@ public partial class MainViewModel : ViewModelBase
     public MainViewModel(
         UserManagementView userView, RoleManagementView roleView,
         ApiListView apiView, CloudView cloudView,
+        WmsView wmsView,
         UserManagementViewModel userVm, RoleManagementViewModel roleVm,
-        ApiListViewModel apiVm, CloudViewModel cloudVm) : this()
+        ApiListViewModel apiVm, CloudViewModel cloudVm,
+        WmsViewModel wmsVm) : this()
     {
         _userView = userView;
         _roleView = roleView;
         _apiView = apiView;
         _cloudView = cloudView;
+        _wmsView = wmsView;
         _userVm = userVm;
         _roleVm = roleVm;
         _apiVm = apiVm;
         _cloudVm = cloudVm;
+        _wmsVm = wmsVm;
 
         // 运行期再设置一次：避免设计期 View 实例被覆盖时需要重新绑定
         if (MenuItems.Count > 0 && SelectedMenuItem == null)
@@ -133,6 +144,7 @@ public partial class MainViewModel : ViewModelBase
         MenuItems.Add(new MenuItem { Title = "角色管理", Icon = "🔑", Key = "roles" });
         MenuItems.Add(new MenuItem { Title = "API 资源", Icon = "🔌", Key = "apis" });
         MenuItems.Add(new MenuItem { Title = "我的云盘", Icon = "☁️", Key = "cloud" });
+        MenuItems.Add(new MenuItem { Title = "WMS 仓储", Icon = "📦", Key = "wms" });
     }
 
     /// <summary>根据菜单 Key 切换右侧内容 View</summary>
@@ -151,6 +163,7 @@ public partial class MainViewModel : ViewModelBase
             "roles"  => _roleView,
             "apis"   => _apiView,
             "cloud"  => _cloudView,
+            "wms"    => _wmsView,
             _        => null
         };
     }
@@ -163,5 +176,6 @@ public partial class MainViewModel : ViewModelBase
         if (_roleVm != null)  await _roleVm.RefreshAsync();
         if (_apiVm != null)   await _apiVm.RefreshAsync();
         if (_cloudVm != null) await _cloudVm.RefreshStatusAsync();
+        if (_wmsVm != null)   await _wmsVm.RefreshAsync();
     }
 }

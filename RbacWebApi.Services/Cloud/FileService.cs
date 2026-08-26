@@ -496,6 +496,34 @@ public class FileService : IFileService
         return (sysFile, userFile);
     }
 
+    /// <summary>
+    /// 分块下载：返回物理文件完整路径 + 总大小 + 实际可读取字节数。
+    /// 服务层不打开流，由 Controller 通过 FileStream + Range 直接写出。
+    /// </summary>
+    public async Task<(bool Success, string Message, string? FullPath, long TotalSize, long ActualLength)> GetFileChunkAsync(
+        string userId, string fileId, long offset, long length)
+    {
+        if (offset < 0) return (false, "offset 不能为负数", null, 0, 0);
+        if (length <= 0) return (false, "length 必须大于 0", null, 0, 0);
+
+        var (sysFile, userFile) = await GetFileInfoForDownloadAsync(userId, fileId);
+        if (sysFile == null || userFile == null)
+            return (false, "文件不存在或未上传完成", null, 0, 0);
+
+        var basePath = Path.Combine(Directory.GetCurrentDirectory(), "files");
+        var fullPath = Path.Combine(basePath, sysFile.StoragePath);
+        if (!File.Exists(fullPath))
+            return (false, "物理文件不存在", null, 0, 0);
+
+        var totalSize = sysFile.FileSize;
+        // 越过文件末尾：返回 0 字节但仍是成功（客户端据此结束循环）
+        if (offset >= totalSize)
+            return (true, "已到文件末尾", fullPath, totalSize, 0);
+
+        var actual = Math.Min(length, totalSize - offset);
+        return (true, "OK", fullPath, totalSize, actual);
+    }
+
     // ============================================================
     //  辅助方法
     // ============================================================

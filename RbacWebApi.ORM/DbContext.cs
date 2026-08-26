@@ -3,6 +3,7 @@ using SqlSugar;
 using Microsoft.Extensions.Configuration;
 using RbacWebApi.Models;
 using RbacWebApi.Models.Cloud;
+using RbacWebApi.Models.Wms;
 
 namespace RbacWebApi.ORM;
 
@@ -86,13 +87,36 @@ public class DbContext : IDbContext
     public void InitializeDatabase()
     {
         Client.CodeFirst.InitTables(
+            // RBAC
             typeof(SysUser),
             typeof(SysRole),
             typeof(SysUserRole),
             typeof(SysApi),
             typeof(SysRoleApi),
+            // 云盘
             typeof(SysFile),
-            typeof(UserCloudDisk)
+            typeof(UserCloudDisk),
+            // WMS 基础数据
+            typeof(Warehouse),
+            typeof(Zone),
+            typeof(Aisle),
+            typeof(Rack),
+            typeof(Location),
+            typeof(Product),
+            typeof(Container),
+            // WMS 业务单据：主表 + 明细
+            typeof(ReceiveOrder),
+            typeof(ReceiveOrderDetail),
+            typeof(InboundOrder),
+            typeof(InboundOrderDetail),
+            typeof(PutawayOrder),
+            typeof(PutawayOrderDetail),
+            typeof(TakeDownOrder),
+            typeof(TakeDownOrderDetail),
+            typeof(PickOrder),
+            typeof(PickOrderDetail),
+            typeof(OutboundOrder),
+            typeof(OutboundOrderDetail)
         );
     }
 

@@ -32,6 +32,9 @@ public partial class App : Application
             // 尝试恢复已保存的会话
             _auth.StateChanged += OnAuthStateChanged;
 
+            // 初始化本地 SQLite 下载记录表（幂等，失败不影响启动）
+            _ = _services.GetRequiredService<IDownloadHistoryService>().InitializeAsync();
+
             if (_auth.HasSavedSession())
             {
                 // 有保存的会话：先显示主窗口，后台验证

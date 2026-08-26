@@ -19,6 +19,8 @@ public static class ServiceConfigurator
         services.AddSingleton<IApiResourceService, ApiResourceService>();
         services.AddSingleton<ICloudDiskService, CloudDiskService>();
         services.AddSingleton<IFileApiService, FileApiService>();
+        services.AddSingleton<IDownloadHistoryService, DownloadHistoryService>();
+        services.AddSingleton<IWmsService, WmsService>();
 
         // ===== ViewModels（Singleton：保留运行期状态） =====
         services.AddSingleton<LoginViewModel>();
@@ -26,6 +28,7 @@ public static class ServiceConfigurator
         services.AddSingleton<RoleManagementViewModel>();
         services.AddSingleton<ApiListViewModel>();
         services.AddSingleton<CloudViewModel>();
+        services.AddSingleton<WmsViewModel>();
         services.AddSingleton<MainViewModel>();
         services.AddSingleton<MainWindowViewModel>();
 
@@ -34,6 +37,7 @@ public static class ServiceConfigurator
         services.AddTransient<RoleManagementView>();
         services.AddTransient<ApiListView>();
         services.AddTransient<CloudView>();
+        services.AddTransient<WmsView>();
         services.AddTransient<MainView>();
 
         return services;

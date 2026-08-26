@@ -20,10 +20,12 @@ public partial class CloudView : UserControl
     {
         DataContext = vm;
         // 注入 StorageProvider：View 已附加到视觉树后才能拿到 TopLevel
-        Loaded += (_, _) =>
+        Loaded += async (_, _) =>
         {
             if (vm.StorageProvider == null)
                 vm.StorageProvider = TopLevel.GetTopLevel(this)?.StorageProvider;
+            // 加载历史下载列表
+            await vm.LoadDownloadHistoryAsync();
         };
     }
 

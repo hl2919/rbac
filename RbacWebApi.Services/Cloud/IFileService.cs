@@ -28,4 +28,16 @@ public interface IFileService
 
     /// <summary>获取文件物理路径（下载时使用）</summary>
     Task<(SysFile? SysFile, UserFile? UserFile)> GetFileInfoForDownloadAsync(string userId, string fileId);
+
+    /// <summary>
+    /// 分块下载：根据 offset 和 length 读取物理文件指定字节区间的数据流。
+    /// 与 GetFileInfoForDownloadAsync 共用权限校验，但返回流由 Controller 直接写到响应体。
+    /// </summary>
+    /// <param name="userId">当前用户 ID</param>
+    /// <param name="fileId">用户文件 ID</param>
+    /// <param name="offset">起始字节偏移（从 0 开始）</param>
+    /// <param name="length">读取字节数（实际返回可能小于此值，到文件末尾）</param>
+    /// <returns>Success、Message、(物理文件完整路径, 文件总大小, 实际读取字节数)</returns>
+    Task<(bool Success, string Message, string? FullPath, long TotalSize, long ActualLength)> GetFileChunkAsync(
+        string userId, string fileId, long offset, long length);
 }

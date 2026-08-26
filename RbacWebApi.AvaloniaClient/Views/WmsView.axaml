@@ -1,0 +1,88 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RbacWebApi.AvaloniaClient.ViewModels"
+             xmlns:dg="using:Avalonia.Controls"
+             x:Class="RbacWebApi.AvaloniaClient.Views.WmsView"
+             x:DataType="vm:WmsViewModel"
+             Design.Width="980" Design.Height="640">
+  <Design.DataContext>
+    <vm:WmsViewModel/>
+  </Design.DataContext>
+
+  <Grid ColumnDefinitions="200,*">
+
+    <!-- ===== 左侧：实体类型选择 ===== -->
+    <Border Grid.Column="0" Background="#FFF2F2F2" BorderBrush="#FFE0E0E0" BorderThickness="0,0,1,0">
+      <DockPanel>
+        <TextBlock DockPanel.Dock="Top" Text="WMS 仓储管理" Margin="14,14,14,10" FontWeight="Bold" FontSize="14"/>
+        <ListBox ItemsSource="{Binding EntityTypes}"
+                 SelectedItem="{Binding SelectedEntityType, Mode=TwoWay}"
+                 Background="Transparent" BorderThickness="0" Padding="2">
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <StackPanel Orientation="Horizontal" Spacing="8" Height="30">
+                <TextBlock Text="{Binding Group}" FontSize="10" Foreground="#FF888888" VerticalAlignment="Center" Width="48"/>
+                <TextBlock Text="{Binding Title}" FontSize="13" VerticalAlignment="Center"/>
+              </StackPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+          <ListBox.Styles>
+            <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+              <Setter Property="Background" Value="#FF0078D7"/>
+            </Style>
+            <Style Selector="ListBoxItem:selected">
+              <Setter Property="Foreground" Value="White"/>
+            </Style>
+          </ListBox.Styles>
+        </ListBox>
+      </DockPanel>
+    </Border>
+
+    <!-- ===== 右侧：工具栏 + 数据表格 + 编辑表单 ===== -->
+    <Grid Grid.Column="1" RowDefinitions="Auto,*,Auto">
+
+      <!-- 工具栏 -->
+      <DockPanel Grid.Row="0" Margin="10,8">
+        <StackPanel Orientation="Horizontal" Spacing="6" DockPanel.Dock="Left">
+          <Button Content="刷新" Command="{Binding RefreshCommand}"/>
+          <Button Content="新增" Command="{Binding AddNewCommand}" Classes="Accent"/>
+          <Button Content="编辑" Command="{Binding EditSelectedCommand}"/>
+          <Button Content="删除" Command="{Binding DeleteCommand}"/>
+        </StackPanel>
+        <TextBlock Text="{Binding Status}" VerticalAlignment="Center" HorizontalAlignment="Right" Foreground="#FF555555"/>
+      </DockPanel>
+
+      <!-- 数据表格：列由 code-behind 按 CurrentItemType 动态重建 -->
+      <dg:DataGrid x:Name="WmsGrid" Grid.Row="1" Margin="10,0,10,4"
+                   ItemsSource="{Binding Items}"
+                   SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+                   AutoGenerateColumns="False" IsReadOnly="True"
+                   GridLinesVisibility="Horizontal" HeadersVisibility="Column"
+                   SelectionMode="Single" CanUserResizeColumns="True"/>
+
+      <!-- 编辑表单：IsEditing 为真时显示 -->
+      <Border Grid.Row="2" IsVisible="{Binding IsEditing}" Background="#FFFAFAFA"
+              BorderBrush="#FFD0D0D0" BorderThickness="0,1,0,0" Padding="12,10">
+        <DockPanel>
+          <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+            <TextBlock Text="{Binding EditingTitle}" FontWeight="Bold" VerticalAlignment="Center"/>
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
+              <Button Content="保存" Command="{Binding SaveCommand}" Classes="Accent"/>
+              <Button Content="取消" Command="{Binding CancelEditCommand}"/>
+            </StackPanel>
+          </DockPanel>
+          <ItemsControl ItemsSource="{Binding Fields}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Grid ColumnDefinitions="140,360" Margin="0,3">
+                  <TextBlock Grid.Column="0" Text="{Binding Label}" VerticalAlignment="Center"/>
+                  <TextBox Grid.Column="1" Text="{Binding Text, Mode=TwoWay}" Watermark="{Binding Label}"/>
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </DockPanel>
+      </Border>
+    </Grid>
+  </Grid>
+</UserControl>

@@ -100,6 +100,47 @@ public class FileController : ControllerBase
         return PhysicalFile(fullPath, contentType, userFile.FileName, enableRangeProcessing: true);
     }
 
+    /// <summary>
+    /// 分块下载接口：按 offset + length 读取指定字节区间的数据流。
+    /// 客户端循环调用此接口实现断点续传，进度可记录到本地 SQLite。
+    /// </summary>
+    /// <param name="id">用户文件 ID</param>
+    /// <param name="offset">起始字节偏移（从 0 开始）</param>
+    /// <param name="length">读取字节数（默认 5MB）</param>
+    /// <returns>字节流（application/octet-stream）；响应头 X-Total-Size 表示文件总大小</returns>
+    [HttpGet("download/chunk/{id}")]
+    public async Task<IActionResult> DownloadChunk(string id, [FromQuery] long offset = 0, [FromQuery] long length = 5L * 1024 * 1024)
+    {
+        var userId = GetUserId();
+        if (userId == null) return Unauthorized();
+
+        var (ok, msg, fullPath, totalSize, actualLen) = await _fileService.GetFileChunkAsync(userId, id, offset, length);
+        if (!ok || fullPath == null)
+            return Ok(ApiResponse<object>.Fail(msg, 404));
+
+        // 已到末尾：返回空流但带上 X-Total-Size / X-Actual-Size 头，客户端据此结束
+        if (actualLen == 0)
+        {
+            Response.Headers["X-Total-Size"] = totalSize.ToString();
+            Response.Headers["X-Actual-Size"] = "0";
+            return new EmptyResult();
+        }
+
+        // 用 FileStream + Range 写入响应体；FileOptions.Asynchronous 提升吞吐
+        var stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.Read,
+            80 * 1024, FileOptions.Asynchronous | FileOptions.SequentialScan);
+        stream.Position = offset;
+
+        Response.Headers["X-Total-Size"] = totalSize.ToString();
+        Response.Headers["X-Actual-Size"] = actualLen.ToString();
+        Response.Headers["Content-Length"] = actualLen.ToString();
+        Response.ContentType = "application/octet-stream";
+        return new FileStreamResult(stream, "application/octet-stream")
+        {
+            EnableRangeProcessing = false
+        };
+    }
+
     /// <summary>新建文件夹</summary>
     [HttpPost("folder")]
     public async Task<ActionResult<ApiResponse<string>>> CreateFolder([FromBody] CreateFolderRequest request)

@@ -46,18 +46,16 @@ public interface IFileApiService
 
     Task<(string? PhysicalUrl, string? FileName, string? ContentType)> GetDownloadInfoAsync(string fileId);
 
-    /// <summary>HEAD 请求获取下载文件的大小（通过 Content-Length 头）</summary>
+    /// <summary>调用后端 download/chunk 接口获取文件总大小（通过 X-Total-Size 头）</summary>
     Task<(bool Success, string Message, long Size)> GetDownloadSizeAsync(string fileId);
 
     /// <summary>
-    /// 分块下载：通过 HTTP Range 头拉取 [from, to] 字节区间的数据流。
-    /// 后端 PhysicalFile(enableRangeProcessing:true) 原生支持 Range。
+    /// 调用后端分块下载接口：GET /api/file/download/chunk/{id}?offset=X&length=Y
+    /// 返回指定字节区间的流 + 实际接收字节数 + 文件总大小（来自 X-Total-Size 头）。
+    /// 当 ActualSize == 0 表示已到文件末尾。
     /// </summary>
-    /// <param name="fileId">用户文件 ID</param>
-    /// <param name="from">起始字节偏移（含）</param>
-    /// <param name="to">结束字节偏移（含），null 表示到文件末尾</param>
-    /// <returns>HTTP 响应：成功时返回流和实际接收字节数</returns>
-    Task<(bool Success, string Message, Stream? Stream, long Received)> DownloadRangeAsync(string fileId, long from, long? to);
+    Task<(bool Success, string Message, Stream? Stream, long Received, long TotalSize)> DownloadChunkAsync(
+        string fileId, long offset, long length);
 }
 
 public class FileApiService : IFileApiService
@@ -138,27 +136,26 @@ public class FileApiService : IFileApiService
         return Task.FromResult<(string?, string?, string?)>((url, null, null));
     }
 
-    /// <summary>HEAD 请求获取下载文件大小</summary>
+    /// <summary>用 download/chunk 接口探测文件总大小（offset=0, length=1）</summary>
     public async Task<(bool Success, string Message, long Size)> GetDownloadSizeAsync(string fileId)
     {
         try
         {
-            var url = $"api/file/download/{Uri.EscapeDataString(fileId)}";
-            // 用 GET + Range: bytes=0-0 探测，比 HEAD 更兼容（部分服务器对 HEAD 返回不完整头）
-            var req = new HttpRequestMessage(HttpMethod.Get, url);
-            req.Headers.Range = new RangeHeaderValue(0, 0);
-            using var resp = await _api.HttpClient.SendAsync(req, HttpCompletionOption.ResponseHeadersRead);
+            var url = $"api/file/download/chunk/{Uri.EscapeDataString(fileId)}?offset=0&length=1";
+            using var resp = await _api.HttpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
             if (!resp.IsSuccessStatusCode)
                 return (false, $"服务器返回 {resp.StatusCode}", 0);
 
-            // 优先 Content-Range.total
-            if (resp.Content.Headers.ContentRange != null && resp.Content.Headers.ContentRange.Length.HasValue)
-                return (true, "OK", resp.Content.Headers.ContentRange.Length.Value);
-
+            // 优先 X-Total-Size 自定义头
+            if (resp.Headers.TryGetValues("X-Total-Size", out var totalValues))
+            {
+                var totalStr = totalValues.FirstOrDefault();
+                if (long.TryParse(totalStr, out var t) && t > 0)
+                    return (true, "OK", t);
+            }
             // 退回 Content-Length
             if (resp.Content.Headers.ContentLength.HasValue)
                 return (true, "OK", resp.Content.Headers.ContentLength.Value);
-
             return (false, "服务器未返回文件大小", 0);
         }
         catch (Exception ex)
@@ -167,29 +164,36 @@ public class FileApiService : IFileApiService
         }
     }
 
-    /// <summary>按 Range 分块下载文件流</summary>
-    public async Task<(bool Success, string Message, Stream? Stream, long Received)> DownloadRangeAsync(
-        string fileId, long from, long? to)
+    /// <summary>调用后端分块下载接口</summary>
+    public async Task<(bool Success, string Message, Stream? Stream, long Received, long TotalSize)> DownloadChunkAsync(
+        string fileId, long offset, long length)
     {
         try
         {
-            var url = $"api/file/download/{Uri.EscapeDataString(fileId)}";
-            var req = new HttpRequestMessage(HttpMethod.Get, url);
-            // RangeHeaderValue(from, to)：to=null 表示到末尾
-            req.Headers.Range = new RangeHeaderValue(from, to);
-            var resp = await _api.HttpClient.SendAsync(req, HttpCompletionOption.ResponseHeadersRead);
-            if (resp.StatusCode == System.Net.HttpStatusCode.RequestedRangeNotSatisfiable)
-                return (false, "Range 不合法（可能文件已变）", null, 0);
+            var url = $"api/file/download/chunk/{Uri.EscapeDataString(fileId)}?offset={offset}&length={length}";
+            var resp = await _api.HttpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
             if (!resp.IsSuccessStatusCode)
-                return (false, $"服务器返回 {resp.StatusCode}", null, 0);
+                return (false, $"服务器返回 {resp.StatusCode}", null, 0, 0);
 
-            var received = resp.Content.Headers.ContentLength ?? 0;
+            // 解析 X-Total-Size / X-Actual-Size 自定义响应头
+            long totalSize = 0;
+            if (resp.Headers.TryGetValues("X-Total-Size", out var tValues)
+                && long.TryParse(tValues.FirstOrDefault(), out var t))
+                totalSize = t;
+
+            long received = 0;
+            if (resp.Headers.TryGetValues("X-Actual-Size", out var aValues)
+                && long.TryParse(aValues.FirstOrDefault(), out var a))
+                received = a;
+            else if (resp.Content.Headers.ContentLength.HasValue)
+                received = resp.Content.Headers.ContentLength.Value;
+
             var stream = await resp.Content.ReadAsStreamAsync();
-            return (true, "OK", stream, received);
+            return (true, "OK", stream, received, totalSize);
         }
         catch (Exception ex)
         {
-            return (false, $"网络错误: {ex.Message}", null, 0);
+            return (false, $"网络错误: {ex.Message}", null, 0, 0);
         }
     }
 
